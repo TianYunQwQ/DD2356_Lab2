@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+double omp_sum(double *x, size_t size) {
+    double sum_val = 0.0;
+    #pragma omp parallel for reduction(+:sum_val) num_threads(32)
+    for (size_t i = 0; i < size; i++) {
+        sum_val += x[i];
+    }
+    return sum_val;
+}
+
+void generate_random(double *input, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        input[i] = rand() / (double)(RAND_MAX);
+    }
+}
+
+int main() {
+    size_t size = 10000000; // 10^7 elements
+    double *array = malloc(size * sizeof(double));
+    generate_random(array, size);
+
+    double result = serial_sum(array, size);
+    printf("Sum: %f\n", result);
+    free(array);
+    return 0;
+}
