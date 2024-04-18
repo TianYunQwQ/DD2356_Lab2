@@ -4,7 +4,7 @@
 
 double omp_sum(double *x, size_t size) {
     double sum_val = 0.0;
-    #pragma omp parallel for reduction(+:sum_val) num_threads(get_num_threads())
+    #pragma omp parallel for reduction(+:sum_val) num_threads(OMP_NUM_THREADS)
     for (size_t i = 0; i < size; i++) {
         sum_val += x[i];
     }
@@ -15,15 +15,6 @@ void generate_random(double *input, size_t size) {
     for (size_t i = 0; i < size; i++) {
         input[i] = rand() / (double)(RAND_MAX);
     }
-}
-
-int get_num_threads() {
-    char *omp_threads_env = getenv("OMP_NUM_THREADS");
-    int num_threads = 1; // Default to 1 thread if OMP_NUM_THREADS is not set
-    if (omp_threads_env != NULL) {
-        num_threads = atoi(omp_threads_env);
-    }
-    return num_threads;
 }
 
 int main() {
