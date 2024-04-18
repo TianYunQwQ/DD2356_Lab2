@@ -85,39 +85,33 @@ int main(int argc, char *argv[]) {
 // DFT/IDFT routine
 // idft: 1 direct DFT, -1 inverse IDFT (Inverse DFT)
 int DFT(int idft, double *xr, double *xi, double *Xr_o, double *Xi_o, int N) {
-  
-  double *temp_Xr = (double*)malloc(N * sizeof(double));
-  double *temp_Xi = (double*)malloc(N * sizeof(double));
-  
-  for (int i = 0; i < N; i++) {
-    temp_Xr[i] = 0.0;
-    temp_Xi[i] = 0.0;
-  }
-  #pragma omp parallel for shared(xr, xi, Xr_o, Xi_o, temp_Xr, temp_Xi)
-  for (int k = 0; k < N; k++) {
-    for (int n = 0; n < N; n++) {
-      double cos_val = cos(n * k * PI2 / N);
-      double sin_val = sin(n * k * PI2 / N);
    
-      temp_Xr[k] += xr[n] * cos_val + idft * xi[n] * sin_val;
-      temp_Xi[k] += -idft * xr[n] * sin_val + xi[n] * cos_val;
+    for (int k = 0; k < N; k++) {
+        Xr_o[k] = 0.0;
+        Xi_o[k] = 0.0;
     }
-  }
 
-  if (idft == -1) {
+    #pragma omp parallel for
     for (int k = 0; k < N; k++) {
-      Xr_o[k] = temp_Xr[k] / N;
-      Xi_o[k] = temp_Xi[k] / N;
+        for (int n = 0; n < N; n++) {
+           
+            double angle = n * k * PI2 / N;
+            // Real part of X[k]
+            Xr_o[k] += xr[n] * cos(angle) + idft * xi[n] * sin(angle);
+            // Imaginary part of X[k]
+            Xi_o[k] += -idft * xr[n] * sin(angle) + xi[n] * cos(angle);
+        }
     }
-  } else {
-    for (int k = 0; k < N; k++) {
-      Xr_o[k] = temp_Xr[k];
-      Xi_o[k] = temp_Xi[k];
+
+    
+    if (idft == -1) {
+        #pragma omp parallel for
+        for (int n = 0; n < N; n++) {
+            Xr_o[n] /= N;
+            Xi_o[n] /= N;
+        }
     }
-  }
-  free(temp_Xr);
-  free(temp_Xi);
-  return 1;
+    return 1;
 }
 // set the initial signal
 // be careful with this
