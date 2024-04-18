@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h> // 引入OpenMP头文件
 
 double serial_sum(double *x, size_t size) {
     double sum_val = 0.0;
@@ -20,8 +21,17 @@ int main() {
     double *array = malloc(size * sizeof(double));
     generate_random(array, size);
 
+    double start_time = omp_get_wtime();
+
     double result = serial_sum(array, size);
+
+    double end_time = omp_get_wtime();
+
     printf("Sum: %f\n", result);
+
+    printf("Time taken: %f seconds\n", end_time - start_time);
+
     free(array);
     return 0;
 }
+
