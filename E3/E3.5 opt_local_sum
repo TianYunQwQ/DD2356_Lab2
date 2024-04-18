@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+double opt_local_sum(double *x, size_t size) {
+    double global_sum = 0.0;
+    double local_sum[128 * 8] = {0}; 
+    #pragma omp parallel num_threads(32)
+    {
+        int tid = omp_get_thread_num();
+        #pragma omp for
+        for (size_t i = 0; i < size; i++) {
+            local_sum[tid * 8] += x[i]; 
+        }
+        #pragma omp critical
+        global_sum += local_sum[tid * 8];
+    }
+    return global_sum;
+}
+
+void generate_random(double *input, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        input[i] = rand() / (double)(RAND_MAX);
+    }
+}
+
+int main() {
+    size_t size = 10000000; 
+    double *array = malloc(size * sizeof(double));
+    generate_random(array, size);
+
+    double result = opt_local_sum(array, size);
+    printf("Optimized Local Sum: %f\n", result);
+
+    free(array);
+    return 0;
+}
