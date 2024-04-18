@@ -4,7 +4,7 @@
 
 double omp_sum(double *x, size_t size) {
     double sum_val = 0.0;
-    #pragma omp parallel for reduction(+:sum_val) num_threads(32)
+    #pragma omp parallel for reduction(+:sum_val) num_threads(get_num_threads())
     for (size_t i = 0; i < size; i++) {
         sum_val += x[i];
     }
@@ -17,13 +17,34 @@ void generate_random(double *input, size_t size) {
     }
 }
 
+int get_num_threads() {
+    char *omp_threads_env = getenv("OMP_NUM_THREADS");
+    int num_threads = 1; // Default to 1 thread if OMP_NUM_THREADS is not set
+    if (omp_threads_env != NULL) {
+        num_threads = atoi(omp_threads_env);
+    }
+    return num_threads;
+}
+
 int main() {
     size_t size = 10000000; // 10^7 elements
     double *array = malloc(size * sizeof(double));
-    generate_random(array, size);
+    if (array == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        return 1;
+    }
+    // Start total time measurement
 
-    double result = serial_sum(array, size);
+    generate_random(array, size);
+    double start_time = omp_get_wtime();
+    double result = omp_sum(array, size);
+
+    // End total time measurement
+    double end_time = omp_get_wtime();
+
     printf("Sum: %f\n", result);
+    printf("Total time taken: %f seconds\n", end_time - start_time);
+
     free(array);
     return 0;
 }
