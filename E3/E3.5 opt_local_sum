@@ -27,11 +27,20 @@ void generate_random(double *input, size_t size) {
 int main() {
     size_t size = 10000000; 
     double *array = malloc(size * sizeof(double));
-    generate_random(array, size);
+    if (array == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        return 1;
+    }
 
+    generate_random(array, size);
+    double start_time = omp_get_wtime();
     double result = opt_local_sum(array, size);
+    double end_time = omp_get_wtime();
+
     printf("Optimized Local Sum: %f\n", result);
+    printf("Total time taken: %f seconds\n", end_time - start_time);
 
     free(array);
     return 0;
 }
+
