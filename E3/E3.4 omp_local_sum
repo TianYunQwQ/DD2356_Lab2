@@ -4,7 +4,7 @@
 
 double omp_local_sum(double *x, size_t size) {
     double global_sum = 0.0;
-    #pragma omp parallel num_threads(32)
+    #pragma omp parallel num_threads(OMP_NUM_THREADS)
     {
         double local_sum = 0.0;
         #pragma omp for
@@ -28,9 +28,14 @@ int main() {
     double *array = malloc(size * sizeof(double));
     generate_random(array, size);
 
+    double start_time = omp_get_wtime();
     double result = omp_local_sum(array, size);
+    double end_time = omp_get_wtime();
+
     printf("Local Sum: %f\n", result);
+    printf("Total time taken: %f seconds\n", end_time - start_time);
 
     free(array);
     return 0;
 }
+
